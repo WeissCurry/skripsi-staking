@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-archivo: "Archivo Black", sans-serif;
+  
+  --color-background: #EFEFEF;
+  --color-foreground: #000000;
+  --color-primary: #10b981;
+  --color-secondary: #FDE047;
+  --color-accent: #3B82F6;
+  --color-neo-border: #000000;
+  
+  --radius-neo: 16px;
+}
+
+:root {
+  --background: #EFEFEF;
+  --foreground: #000000;
+  --primary: #10b981;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* Neo Brutalist Utility Classes - Compact */
+  .neo-card {
+    @apply bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all rounded-[10px];
+  }
+  
+  .neo-card-hover {
+    @apply hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)];
+  }
+
+  .neo-btn {
+    @apply border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-wider px-4 py-2 transition-all active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] rounded-[8px] text-xs;
+  }
+
+  .neo-btn-emerald { @apply bg-[#10b981] hover:bg-[#059669]; }
+  .neo-btn-yellow { @apply bg-[#FDE047] hover:bg-[#FACC15]; }
+  .neo-btn-blue { @apply bg-[#3B82F6] hover:bg-[#2563EB]; }
+  .neo-btn-white { @apply bg-white hover:bg-gray-100; }
+  .neo-btn-red { @apply bg-[#EF4444] hover:bg-[#DC2626]; }
+
+  .neo-input {
+    @apply bg-white border-2 border-black px-4 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-black/5 rounded-[6px];
+  }
+
+  .neo-badge {
+    @apply border-2 border-black px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-[4px];
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-black border-2 border-background;
+}
+
