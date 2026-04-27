@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { ShieldCheck, ArrowRight, Zap, RefreshCcw, AlertCircle, TrendingUp, Lock, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useBalance } from "wagmi";
 import { parseEther, formatEther } from "viem";
 import { CONTRACT_ADDRESSES } from "@/constants/contracts";
-import SkripsiPoolABI from "@/abis/SkripsiPool.json";
+import SkripsiStakingABI from "@/abis/SkripsiStaking.json";
+import { useActivity } from "@/hooks/useActivity";
 
 type Tab = "stake" | "unstake";
 
@@ -16,14 +17,28 @@ export default function StakeCard() {
     address: address,
     query: { enabled: isConnected }
   });
+
   const [activeTab, setActiveTab] = useState<Tab>("stake");
   const [amount, setAmount] = useState<string>("");
   const [agreed, setAgreed] = useState(false);
-  const [selectedProtocol, setSelectedProtocol] = useState<"solo" | "lido">("solo");
 
+  // Membaca saldo Shares (SKRIPSI) milik user
+  const { data: sharesBalance } = useReadContract({
+    address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
+    abi: SkripsiStakingABI,
+    functionName: "balanceOf",
+    args: [address],
+    query: { enabled: isConnected && !!address, refetchInterval: 5000 }
+  });
+
+  // Hook untuk Transaksi
+  const { data: hash, writeContract, isPending: isWritePending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  // Hook untuk Membaca NAV Rate
   const { data: navRateRaw } = useReadContract({
-    address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_POOL as `0x${string}`,
-    abi: SkripsiPoolABI,
+    address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
+    abi: SkripsiStakingABI,
     functionName: "getExchangeRate",
     query: { enabled: isConnected, refetchInterval: 10000 }
   });
@@ -38,15 +53,13 @@ export default function StakeCard() {
   ];
 
   const [selectedPoolId, setSelectedPoolId] = useState(ACTIVE_POOLS[0].id);
-  const { data: hash, writeContract, isPending: isWritePending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const handleStake = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
     writeContract({
-      address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_POOL as `0x${string}`,
-      abi: SkripsiPoolABI,
-      functionName: "deposit",
+      address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
+      abi: SkripsiStakingABI,
+      functionName: "depositETH",
       value: parseEther(amount),
     });
   };
@@ -54,9 +67,9 @@ export default function StakeCard() {
   const handleUnstake = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
     writeContract({
-      address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_POOL as `0x${string}`,
-      abi: SkripsiPoolABI,
-      functionName: "withdraw",
+      address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
+      abi: SkripsiStakingABI,
+      functionName: "redeemETH",
       args: [parseEther(amount)],
     });
   };
@@ -66,79 +79,35 @@ export default function StakeCard() {
     return activeTab === "stake" ? (val / NAV_RATE).toFixed(4) : (val * NAV_RATE).toFixed(4);
   };
 
-  const riskState = useMemo(() => {
-    if (selectedProtocol === "lido") {
-      return {
-        level: "red",
-        label: "High Risk: Shariah Violation Detected",
-        score: 18,
-        isVetoed: true,
-        statusText: "TIDAK SYARIAH (HARAM)"
-      };
-    }
-    return {
-      level: "green",
-      label: "Safe: Shariah Compliant & Low Risk",
-      score: 14,
-      isVetoed: false,
-      statusText: "SYARIAH COMPLIANT"
-    };
-  }, [selectedProtocol]);
+  const isButtonDisabled = !agreed || !amount || parseFloat(amount) <= 0 || isWritePending || isConfirming || !isConnected;
 
-  const isButtonDisabled = !agreed || !amount || parseFloat(amount) <= 0 || riskState.isVetoed || isWritePending || isConfirming || !isConnected;
+  const { addActivity } = useActivity();
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && hash) {
+      addActivity({
+        id: hash,
+        type: activeTab === "stake" ? "Deposit" : "Redeem",
+        amount: amount,
+        unit: activeTab === "stake" ? "ETH" : "Shares",
+        timestamp: Date.now(),
+        status: "success",
+      });
       setTimeout(() => { setAmount(""); }, 0);
-      alert("Transaksi Berhasil! Token SKRIPSI Anda akan segera muncul di dompet.");
+      alert("Transaksi Berhasil! Shares SKRIPSI Anda akan segera muncul di dompet.");
     }
-  }, [isSuccess]);
+  }, [isSuccess, hash, activeTab, amount, addActivity]);
 
   return (
     <div className="neo-card bg-white w-full mx-auto overflow-hidden">
-      {/* EWS Banner (Hifzul Mal Indicator) */}
-      <div className={`px-4 py-3 border-b-2 border-black flex items-center justify-between transition-all duration-500 relative overflow-hidden ${
-        riskState.level === "green" ? "bg-[#10b981]" : riskState.level === "yellow" ? "bg-[#FDE047]" : "bg-[#EF4444]"
-      }`}>
-        {/* Animated pulse for danger state */}
-        {riskState.isVetoed && <motion.div animate={{ opacity: [0.1, 0.3, 0.1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute inset-0 bg-white" />}
-        
-        <div className="flex items-center gap-3 relative z-10">
-          <div className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center ${
-            riskState.isVetoed ? "bg-white" : "bg-black"
-          }`}>
-            <ShieldCheck size={18} className={riskState.isVetoed ? "text-[#EF4444]" : "text-white"} />
-          </div>
-          <div>
-            <span className={`text-[10px] font-black uppercase tracking-[0.2em] block leading-none ${riskState.isVetoed ? "text-white" : "text-black"}`}>
-              {riskState.statusText}
-            </span>
-            <span className={`text-sm font-black italic uppercase leading-none ${riskState.isVetoed ? "text-white" : "text-black"}`}>
-              {riskState.label}
-            </span>
-          </div>
+      {/* Header Info (Hifzul Mal context) */}
+      <div className="px-4 py-4 border-b-2 border-black bg-black text-white flex items-center gap-3">
+        <div className="w-10 h-10 bg-[#10b981] border-2 border-white flex items-center justify-center rounded-full shrink-0">
+          <ShieldCheck size={24} className="text-black" />
         </div>
-        
-        <div className="flex flex-col items-end gap-1 relative z-10">
-          <span className={`text-[8px] font-black uppercase ${riskState.isVetoed ? "text-white/60" : "text-black/40"}`}>Pilih Protokol:</span>
-          <div className="flex gap-1 p-1 bg-black/20 rounded-lg border border-black/20">
-            <button 
-              onClick={() => setSelectedProtocol("solo")}
-              className={`px-2 py-1 text-[8px] font-black uppercase rounded transition-all ${
-                selectedProtocol === "solo" ? "bg-[#10b981] text-black border border-black" : "text-black/40 hover:text-black"
-              }`}
-            >
-              Solo
-            </button>
-            <button 
-              onClick={() => setSelectedProtocol("lido")}
-              className={`px-2 py-1 text-[8px] font-black uppercase rounded transition-all ${
-                selectedProtocol === "lido" ? "bg-[#EF4444] text-white border border-black" : "text-black/40 hover:text-black"
-              }`}
-            >
-              Lido
-            </button>
-          </div>
+        <div>
+          <h3 className="text-sm font-black uppercase italic leading-none">Proposed Shariah Staking</h3>
+          <p className="text-[10px] font-bold text-white/60 uppercase mt-1 tracking-widest">ERC-4626 Tokenized Vault / NAV Model</p>
         </div>
       </div>
 
@@ -148,13 +117,13 @@ export default function StakeCard() {
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === "stake" ? "bg-[#10b981] text-black" : "text-white hover:text-[#10b981]"
           }`}>
-          <Zap size={14} /> Stake (Mint)
+          <Zap size={14} /> Deposit (Mint Shares)
         </button>
         <button onClick={() => { setActiveTab("unstake"); setAmount(""); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === "unstake" ? "bg-[#EF4444] text-white" : "text-white hover:text-[#EF4444]"
           }`}>
-          <RefreshCcw size={14} /> Unstake (Burn)
+          <RefreshCcw size={14} /> Redeem (Withdraw ETH)
         </button>
       </div>
 
@@ -197,7 +166,7 @@ export default function StakeCard() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
-                    <label className="text-xs font-black uppercase">Jumlah Stake (ETH)</label>
+                    <label className="text-xs font-black uppercase">Jumlah Deposit (ETH)</label>
                     {isConnected && balanceData && (
                       <span className="text-[9px] font-bold text-black/40 uppercase">Saldo: {parseFloat(balanceData.formatted).toFixed(4)} ETH</span>
                     )}
@@ -218,10 +187,10 @@ export default function StakeCard() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="neo-card p-3 bg-gray-50 border-dashed">
                   <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs NAV</span>
-                  <div className="text-sm font-black italic">1 LST = {NAV_RATE} ETH</div>
+                  <div className="text-sm font-black italic">1 Share = {NAV_RATE} ETH</div>
                 </div>
                 <div className="neo-card p-3 bg-[#10b981]/10 border-[#10b981]/30">
-                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi LST</span>
+                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi Shares</span>
                   <div className="text-lg font-black text-[#10b981]">{getEstimatedOutput()}</div>
                 </div>
               </div>
@@ -244,7 +213,7 @@ export default function StakeCard() {
                 {isWritePending || isConfirming ? (
                   <>Menunggu... <Loader2 className="animate-spin" size={18} /></>
                 ) : (
-                  <>{!isConnected ? "Hubungkan Dompet" : riskState.isVetoed ? "AKSES DIBLOKIR (PELANGGARAN SYARIAH)" : "Deposit ETH & Mint LST"} <ArrowRight size={18} /></>
+                  <>{!isConnected ? "Hubungkan Dompet" : "Deposit ETH to Mint Shares"} <ArrowRight size={18} /></>
                 )}
               </button>
             </motion.div>
@@ -262,14 +231,19 @@ export default function StakeCard() {
               {/* Input */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-black uppercase">Jumlah LST (Burn)</label>
-                  <button onClick={() => setAmount("100.00")} className="text-[10px] font-black uppercase bg-black text-white px-2 py-1 hover:bg-[#3B82F6] transition-colors rounded">Max</button>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-black uppercase">Jumlah Redeem (Shares)</label>
+                    {isConnected && sharesBalance !== undefined && (
+                      <span className="text-[9px] font-bold text-[#EF4444]/60 uppercase tracking-tight">Saldo Tersedia: {parseFloat(formatEther(sharesBalance as bigint)).toFixed(4)} SKRIPSI</span>
+                    )}
+                  </div>
+                  <button onClick={() => setAmount(formatEther((sharesBalance as bigint) || BigInt(0)))} className="text-[10px] font-black uppercase bg-black text-white px-2 py-1 hover:bg-[#3B82F6] transition-colors rounded">Max</button>
                 </div>
                 <div className="relative">
                   <input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)}
                     className="neo-input w-full py-4 pr-16 text-2xl font-black placeholder:text-gray-300 border-[#EF4444]" />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-end">
-                    <span className="text-base font-black text-[#EF4444]">LST</span>
+                    <span className="text-base font-black text-[#EF4444]">SHARES</span>
                     <span className="text-[10px] font-bold text-black/40 tracking-tighter">SKRIPSI</span>
                   </div>
                 </div>
@@ -279,7 +253,7 @@ export default function StakeCard() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="neo-card p-3 bg-gray-50">
                   <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs</span>
-                  <div className="text-sm font-black italic">1 LST = {NAV_RATE} ETH</div>
+                  <div className="text-sm font-black italic">1 Share = {NAV_RATE} ETH</div>
                 </div>
                 <div className="neo-card p-3 bg-[#EF4444]/10">
                   <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi ETH</span>
@@ -292,14 +266,14 @@ export default function StakeCard() {
                 <p className="text-[10px] font-bold text-black/60 uppercase leading-tight">Pokok + Imbal Hasil dikirimkan otomatis setelah antrian.</p>
               </div>
 
-              <button onClick={handleUnstake} disabled={!amount || parseFloat(amount) <= 0 || isWritePending || isConfirming || !isConnected}
+              <button onClick={handleUnstake} disabled={isButtonDisabled}
                 className={`neo-btn w-full py-4 text-sm flex items-center justify-center gap-3 ${
-                  !amount || parseFloat(amount) <= 0 || isWritePending || isConfirming || !isConnected ? "bg-gray-100 text-black/20 cursor-not-allowed border-black/10 shadow-none opacity-50" : "neo-btn-red"
+                  isButtonDisabled ? "bg-gray-100 text-black/20 cursor-not-allowed border-black/10 shadow-none opacity-50" : "neo-btn-red"
                 }`}>
                 {isWritePending || isConfirming ? (
                   <>Memproses... <Loader2 className="animate-spin" size={18} /></>
                 ) : (
-                  <>{!isConnected ? "Hubungkan Dompet" : "Burn LST & Withdraw ETH"} <TrendingUp size={18} /></>
+                  <>{!isConnected ? "Hubungkan Dompet" : "Redeem Shares to Withdraw ETH"} <TrendingUp size={18} /></>
                 )}
               </button>
             </motion.div>

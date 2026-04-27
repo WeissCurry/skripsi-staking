@@ -5,15 +5,30 @@ import {
   ShieldCheck, 
   Gem,
   Activity,
-  ExternalLink,
   Layers,
   Calendar,
   Users,
   Filter,
-  ChevronDown
+  ChevronDown,
+  TrendingUp,
+  BarChart3
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  AreaChart,
+  Area
+} from "recharts";
 import StakeCard from "@/components/StakeCard";
+import { useReadContract } from "wagmi";
+import { formatEther } from "viem";
+import { motion, AnimatePresence } from "framer-motion";
+import { CONTRACT_ADDRESSES } from "@/constants/contracts";
+import SkripsiStakingABI from "@/abis/SkripsiStaking.json";
 
 const POOLS: PoolRowProps[] = [
   { id: "S-02", status: "Active", duration: "180 Hari", filled: 482, total: 512, apr: "4.2", color: "bg-[#10b981]" },
@@ -25,6 +40,36 @@ const POOLS: PoolRowProps[] = [
 export default function Dashboard() {
   const [filter, setFilter] = React.useState<"All" | "Active" | "Upcoming" | "Finished">("All");
   const [sortBy, setSortBy] = React.useState<"ID" | "APR">("ID");
+
+  // Membaca total ETH di dalam pool secara real-time
+  const { data: totalAssets } = useReadContract({
+    address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
+    abi: SkripsiStakingABI,
+    functionName: "totalAssets",
+    query: { refetchInterval: 10000 }
+  });
+
+  const formattedTotal = totalAssets ? parseFloat(formatEther(totalAssets as bigint)).toLocaleString('id-ID', { minimumFractionDigits: 2 }) : "0,00";
+
+  // Membaca kurs NAV terbaru
+  const { data: navRateRaw } = useReadContract({
+    address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
+    abi: SkripsiStakingABI,
+    functionName: "getExchangeRate",
+    query: { refetchInterval: 10000 }
+  });
+
+  const navRate = navRateRaw ? parseFloat(formatEther(navRateRaw as bigint)) : 1.0;
+
+  // Mock data untuk historis (Data real-time disisipkan di titik terakhir)
+  const chartData = [
+    { name: "Apr 22", staked: 800, nav: 1.000 },
+    { name: "Apr 23", staked: 950, nav: 1.005 },
+    { name: "Apr 24", staked: 1100, nav: 1.008 },
+    { name: "Apr 25", staked: 1150, nav: 1.012 },
+    { name: "Apr 26", staked: 1200, nav: 1.015 },
+    { name: "Hari Ini", staked: totalAssets ? parseFloat(formatEther(totalAssets as bigint)) : 1245, nav: navRate },
+  ];
 
   const filteredPools = React.useMemo(() => {
     const result = filter === "All" ? [...POOLS] : POOLS.filter(p => p.status === filter);
@@ -38,37 +83,109 @@ export default function Dashboard() {
     <div className="flex flex-col gap-4">
       {/* Top Summary Row */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total ETH Di-stake" val="1.245,82" sub="+2,4% vs bulan lalu" icon={<Gem size={15} />} color="bg-[#10b981]" />
-        <StatCard label="Imbal Hasil LST" val="3,82% APR" sub="Suku bunga variabel" icon={<Activity size={15} />} color="bg-[#3B82F6]" />
+        <StatCard label="Total ETH Di-stake" val={formattedTotal} sub="+2,4% vs bulan lalu" icon={<Gem size={15} />} color="bg-[#10b981]" />
+        <StatCard label="Imbal Hasil LST" val={`${((navRate - 1) * 100).toFixed(2)}%`} sub="Kenaikan Nilai NAV" icon={<Activity size={15} />} color="bg-[#3B82F6]" />
         <StatCard label="Validator Aman" val="32 Unit" sub="100% Syariah" icon={<ShieldCheck size={15} />} color="bg-[#FDE047]" />
-        <StatCard label="Posisi Pasar" val="$2,98M" sub="$2.400,00 / ETH" icon={<ExternalLink size={15} />} color="bg-[#A855F7]" />
+        <StatCard label="Kurs LST/ETH" val={navRate.toFixed(4)} sub="1 Share dalam ETH" icon={<TrendingUp size={15} />} color="bg-[#A855F7]" />
       </section>
 
-      {/* Diversity & Health Row (NEW: Nakamoto Coefficient) */}
+      {/* Performance & Client Diversity Row */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-12">
-          <div className="neo-card p-4 bg-white">
+        {/* Performance Chart */}
+        <div className="lg:col-span-8">
+           <div className="neo-card p-4 bg-white h-[320px] flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                 <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-black border-2 border-black flex items-center justify-center rounded-md">
+                       <BarChart3 size={18} className="text-[#10b981]" />
+                    </div>
+                    <div>
+                       <h3 className="text-xs font-black uppercase italic leading-none">Staking Performance</h3>
+                       <p className="text-[9px] font-bold text-black/40 uppercase mt-1">Akumulasi Deposit & Pertumbuhan NAV</p>
+                    </div>
+                 </div>
+                 <div className="flex gap-4">
+                    <div className="flex items-center gap-1">
+                       <div className="w-2 h-2 bg-[#10b981] rounded-full" />
+                       <span className="text-[9px] font-black uppercase">ETH Staked</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                       <div className="w-2 h-2 bg-[#3B82F6] rounded-full" />
+                       <span className="text-[9px] font-black uppercase">NAV Price</span>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="flex-1 w-full mt-2">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                       <defs>
+                          <linearGradient id="colorStaked" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                             <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                       </defs>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                       <XAxis dataKey="name" fontSize={10} fontStyle="italic" fontWeight="bold" axisLine={false} tickLine={false} />
+                       <YAxis yAxisId="left" fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} />
+                       <YAxis yAxisId="right" orientation="right" domain={['dataMin - 0.01', 'dataMax + 0.01']} fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} />
+                       <Tooltip 
+                          contentStyle={{ backgroundColor: 'white', border: '2px solid black', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px' }}
+                       />
+                       <Area yAxisId="left" type="monotone" dataKey="staked" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorStaked)" />
+                       <Line yAxisId="right" type="monotone" dataKey="nav" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4, fill: 'black' }} />
+                    </AreaChart>
+                 </ResponsiveContainer>
+              </div>
+           </div>
+        </div>
+
+        {/* Client Diversity (Nakamoto) */}
+        <div className="lg:col-span-4">
+          <div className="neo-card p-4 bg-white h-[320px]">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-[#A855F7] border-2 border-black flex items-center justify-center rounded-md">
                   <Layers size={18} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black uppercase italic leading-none">Nakamoto Coefficient (Client Diversity)</h3>
-                  <p className="text-[10px] font-bold text-black/40 uppercase mt-1">Distribusi Konsensus Beacon Chain</p>
+                  <h3 className="text-xs font-black uppercase italic leading-none">Client Diversity</h3>
+                  <p className="text-[9px] font-bold text-black/40 uppercase mt-1">Hifzul Mal Indicator</p>
                 </div>
               </div>
-              <div className="neo-badge bg-black text-white text-[9px]">Skor Keragaman: Tinggi</div>
+              <div className="neo-badge bg-black text-white text-[9px]">Skor: Tinggi</div>
             </div>
             
-            <div className="space-y-3">
-              <div className="h-8 w-full border-2 border-black rounded-md overflow-hidden flex shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="h-full bg-[#3B82F6] border-r-2 border-black flex items-center justify-center text-[10px] font-black text-white" style={{ width: '60%' }}>GETH 60%</div>
-                <div className="h-full bg-[#10b981] border-r-2 border-black flex items-center justify-center text-[10px] font-black text-black" style={{ width: '20%' }}>TEKU 20%</div>
-                <div className="h-full bg-[#FDE047] flex items-center justify-center text-[10px] font-black text-black" style={{ width: '20%' }}>BESU 20%</div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                 <div className="flex justify-between text-[9px] font-black uppercase">
+                    <span>Geth (Execution)</span>
+                    <span className="text-[#EF4444]">60%</span>
+                 </div>
+                 <div className="h-3 w-full bg-gray-100 border-2 border-black rounded-sm overflow-hidden">
+                    <div className="h-full bg-[#EF4444]" style={{ width: '60%' }} />
+                 </div>
               </div>
-              <p className="text-[9px] font-bold text-black/60 italic">
-                *Diversitas klien krusial untuk mencegah slashing massal dan menjaga integritas Hifzul Mal.
+              <div className="space-y-2">
+                 <div className="flex justify-between text-[9px] font-black uppercase">
+                    <span>Teku (Consensus)</span>
+                    <span>25%</span>
+                 </div>
+                 <div className="h-3 w-full bg-gray-100 border-2 border-black rounded-sm overflow-hidden">
+                    <div className="h-full bg-[#10b981]" style={{ width: '25%' }} />
+                 </div>
+              </div>
+              <div className="space-y-2">
+                 <div className="flex justify-between text-[9px] font-black uppercase">
+                    <span>Prysm (Consensus)</span>
+                    <span>15%</span>
+                 </div>
+                 <div className="h-3 w-full bg-gray-100 border-2 border-black rounded-sm overflow-hidden">
+                    <div className="h-full bg-[#3B82F6]" style={{ width: '15%' }} />
+                 </div>
+              </div>
+              <p className="text-[9px] font-bold text-black/60 italic mt-4 leading-tight">
+                *Peringatan: Dominasi Geth &gt; 66% berisiko tinggi terhadap finalitas jaringan.
               </p>
             </div>
           </div>

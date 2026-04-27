@@ -6,7 +6,7 @@ import { ShieldCheck, AlertTriangle, Target, Zap, Globe, Lock, Database, Refresh
 import { motion, AnimatePresence } from "framer-motion";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
 
-interface Metric { label: string; score: 1 | 2 | 3; icon: React.ReactNode; }
+interface Metric { label: string; score: number; maxScore: number; icon: React.ReactNode; }
 interface Protocol {
   id: string; name: string; icon: React.ReactNode; description: string;
   status: "Audited" | "Warning" | "Verified";
@@ -20,16 +20,16 @@ const protocols: Protocol[] = [
     description: "Model staking mandiri dengan kontrol penuh atas validator.",
     status: "Verified",
     metrics: [
-      { label: "Akad", score: 1, icon: <Scale size={12} /> },
-      { label: "Riba", score: 1, icon: <Zap size={12} /> },
-      { label: "Gharar", score: 1, icon: <AlertTriangle size={12} /> },
-      { label: "Uptime", score: 2, icon: <RefreshCcw size={12} /> },
-      { label: "Slashing", score: 1, icon: <ShieldCheck size={12} /> },
-      { label: "Diversity", score: 1, icon: <Globe size={12} /> },
-      { label: "Security", score: 1, icon: <Lock size={12} /> },
-      { label: "Key", score: 1, icon: <Database size={12} /> },
-      { label: "Redundancy", score: 3, icon: <Target size={12} /> },
-      { label: "Liquidity", score: 2, icon: <Activity size={12} /> },
+      { label: "Akad", score: 0, maxScore: 1, icon: <Scale size={12} /> },
+      { label: "Riba", score: 0, maxScore: 1, icon: <Zap size={12} /> },
+      { label: "Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} /> },
+      { label: "Uptime", score: 2, maxScore: 4, icon: <RefreshCcw size={12} /> },
+      { label: "Slashing", score: 1, maxScore: 2, icon: <ShieldCheck size={12} /> },
+      { label: "Diversity", score: 2, maxScore: 3, icon: <Globe size={12} /> },
+      { label: "Audit", score: 1, maxScore: 2, icon: <Lock size={12} /> },
+      { label: "Key", score: 1, maxScore: 2, icon: <Database size={12} /> },
+      { label: "Redundancy", score: 2, maxScore: 2, icon: <Target size={12} /> },
+      { label: "Liquidity", score: 2, maxScore: 3, icon: <Activity size={12} /> },
     ]
   },
   {
@@ -38,16 +38,16 @@ const protocols: Protocol[] = [
     description: "Protokol liquid staking terbesar, risiko sentralisasi.",
     status: "Warning",
     metrics: [
-      { label: "Akad", score: 3, icon: <Scale size={12} /> },
-      { label: "Riba", score: 3, icon: <Zap size={12} /> },
-      { label: "Gharar", score: 3, icon: <AlertTriangle size={12} /> },
-      { label: "Uptime", score: 1, icon: <RefreshCcw size={12} /> },
-      { label: "Slashing", score: 1, icon: <ShieldCheck size={12} /> },
-      { label: "Diversity", score: 3, icon: <Globe size={12} /> },
-      { label: "Security", score: 1, icon: <Lock size={12} /> },
-      { label: "Key", score: 1, icon: <Database size={12} /> },
-      { label: "Redundancy", score: 1, icon: <Target size={12} /> },
-      { label: "Liquidity", score: 1, icon: <Activity size={12} /> },
+      { label: "Akad", score: 0, maxScore: 1, icon: <Scale size={12} /> },
+      { label: "Riba", score: 1, maxScore: 1, icon: <Zap size={12} /> },
+      { label: "Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} /> },
+      { label: "Uptime", score: 1, maxScore: 4, icon: <RefreshCcw size={12} /> },
+      { label: "Slashing", score: 1, maxScore: 2, icon: <ShieldCheck size={12} /> },
+      { label: "Diversity", score: 3, maxScore: 3, icon: <Globe size={12} /> },
+      { label: "Audit", score: 1, maxScore: 2, icon: <Lock size={12} /> },
+      { label: "Key", score: 2, maxScore: 2, icon: <Database size={12} /> },
+      { label: "Redundancy", score: 1, maxScore: 2, icon: <Target size={12} /> },
+      { label: "Liquidity", score: 2, maxScore: 3, icon: <Activity size={12} /> },
     ]
   },
 ];
@@ -60,35 +60,46 @@ export default function RiskExplorer() {
     return protocols.map(p => {
       const totalScore = p.metrics.reduce((acc, m) => acc + m.score, 0);
       const complianceMetrics = p.metrics.slice(0, 3);
-      const isVetoed = complianceMetrics.some(m => m.score === 3);
+      const isVetoed = complianceMetrics.some(m => m.score === 1);
       
-      let riskLevel = "Low Risk";
+      let riskLevel = "Investment Grade / Aman";
       let scoreColor = "bg-[#10b981]";
       let zone: "green" | "yellow" | "red" = "green";
 
       if (isVetoed) {
-        riskLevel = "High Risk (Veto)";
+        riskLevel = "Tidak Patuh Syariah";
         scoreColor = "bg-[#EF4444]";
         zone = "red";
-      } else if (totalScore >= 23) {
-        riskLevel = "High Risk";
+      } else if (totalScore >= 17) {
+        riskLevel = "High-Risk";
         scoreColor = "bg-[#EF4444]";
         zone = "red";
-      } else if (totalScore >= 16) {
-        riskLevel = "Moderate Risk";
+      } else if (totalScore >= 12) {
+        riskLevel = "Speculative Grade";
         scoreColor = "bg-[#FDE047]";
         zone = "yellow";
       } else {
-        riskLevel = "Low Risk";
+        riskLevel = "Investment Grade / Aman";
         scoreColor = "bg-[#10b981]";
         zone = "green";
       }
 
+      // Normalization logic for radar chart (0-100%)
+      const totalCompliance = p.metrics[0].score + p.metrics[1].score + p.metrics[2].score;
+      const totalOps = p.metrics[3].score + p.metrics[4].score + p.metrics[5].score;
+      const totalTech = p.metrics[6].score + p.metrics[7].score + p.metrics[8].score;
+      const totalFin = p.metrics[9].score;
+
+      const complianceAxis = isVetoed ? 100 : (totalCompliance / 3) * 100;
+      const opsAxis = (totalOps / 9) * 100;
+      const techAxis = (totalTech / 6) * 100;
+      const finAxis = (totalFin / 3) * 100;
+
       const averages = [
-        { subject: 'Compliance', A: (p.metrics[0].score + p.metrics[1].score + p.metrics[2].score) / 3, fullMark: 3 },
-        { subject: 'Operational', A: (p.metrics[3].score + p.metrics[4].score + p.metrics[5].score) / 3, fullMark: 3 },
-        { subject: 'Technological', A: (p.metrics[6].score + p.metrics[7].score + p.metrics[8].score) / 3, fullMark: 3 },
-        { subject: 'Financial', A: p.metrics[9].score, fullMark: 3 },
+        { subject: 'Compliance', A: complianceAxis, fullMark: 100 },
+        { subject: 'Operational', A: opsAxis, fullMark: 100 },
+        { subject: 'Technological', A: techAxis, fullMark: 100 },
+        { subject: 'Financial', A: finAxis, fullMark: 100 },
       ];
 
       return {
@@ -156,7 +167,7 @@ export default function RiskExplorer() {
                 <td className="p-4">
                    <div className="flex flex-col items-center">
                       <div className="text-lg font-black italic leading-none">{p.totalScore}</div>
-                      <div className={`text-[8px] font-black uppercase mt-1 px-1.5 py-0.5 rounded ${p.scoreColor} border border-black`}>
+                      <div className={`text-[8px] font-black uppercase mt-1 px-1.5 py-0.5 rounded ${p.scoreColor} border border-black ${p.isVetoed ? 'text-white' : 'text-black'}`}>
                         {p.riskLevel}
                       </div>
                    </div>
@@ -245,9 +256,9 @@ export default function RiskExplorer() {
                   {/* Left Column: Score & Details */}
                   <div className="lg:col-span-3 flex flex-col gap-4">
                     <div className={`neo-card p-6 flex flex-col items-center justify-center text-center ${currentProtocol.scoreColor}`}>
-                      <span className="text-xs font-black uppercase tracking-[0.3em] mb-2 opacity-60 text-black">Total Risk Score</span>
-                      <div className="text-6xl font-black tracking-tighter leading-none mb-2 text-black">
-                        {currentProtocol.totalScore}<span className="text-xl opacity-40">/30</span>
+                      <span className={`text-xs font-black uppercase tracking-[0.3em] mb-2 opacity-60 ${currentProtocol.isVetoed ? 'text-white' : 'text-black'}`}>Total Risk Score</span>
+                      <div className={`text-6xl font-black tracking-tighter leading-none mb-2 ${currentProtocol.isVetoed ? 'text-white' : 'text-black'}`}>
+                        {currentProtocol.totalScore}<span className="text-xl opacity-40">/21</span>
                       </div>
                       <div className="neo-badge bg-black text-white mt-4 text-xs px-4 py-1">{currentProtocol.riskLevel}</div>
                     </div>
@@ -290,19 +301,37 @@ export default function RiskExplorer() {
                                     <span className="p-1 bg-black text-white rounded-sm">{item.icon}</span>
                                     <span className="text-[10px] font-black uppercase leading-none">{item.label}</span>
                                   </div>
-                                  <span className={`text-[10px] font-black ${item.score === 3 ? "text-red-600" : "text-black"}`}>{item.score}/3</span>
+                                  <span className={`text-[10px] font-black ${item.score === item.maxScore ? "text-[#EF4444]" : "text-black"}`}>{item.score}/{item.maxScore}</span>
                                 </div>
                                 <div className="h-6 flex gap-1">
-                                  {[1, 2, 3].map((block) => (
-                                    <div 
-                                      key={block}
-                                      className={`flex-1 border-2 border-black rounded-sm transition-colors ${
-                                        block <= item.score 
-                                          ? (item.score === 3 ? "bg-[#EF4444]" : item.score === 2 ? "bg-[#FDE047]" : "bg-[#10b981]") 
-                                          : "bg-gray-100"
-                                      }`}
-                                    />
-                                  ))}
+                                  {Array.from({ length: item.maxScore }).map((_, bIdx) => {
+                                    const blockNumber = bIdx + 1;
+                                    
+                                    // Determine how many blocks are "filled" and the color
+                                    let isFilled = false;
+                                    let blockColor = "bg-gray-100";
+
+                                    if (item.maxScore === 1) {
+                                      // Boolean Case
+                                      isFilled = true; // Always fill 1 block to represent state
+                                      blockColor = item.score === 0 ? "bg-[#10b981]" : "bg-[#EF4444]";
+                                    } else {
+                                      // Standard Case
+                                      isFilled = blockNumber <= item.score;
+                                      if (isFilled) {
+                                        if (item.score === item.maxScore) blockColor = "bg-[#EF4444]";
+                                        else if (item.score === 1) blockColor = "bg-[#10b981]";
+                                        else blockColor = "bg-[#FDE047]";
+                                      }
+                                    }
+
+                                    return (
+                                      <div 
+                                        key={blockNumber}
+                                        className={`flex-1 border-2 border-black rounded-sm transition-colors ${blockColor}`}
+                                      />
+                                    );
+                                  })}
                                 </div>
                               </div>
                             ))}
