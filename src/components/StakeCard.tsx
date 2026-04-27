@@ -89,12 +89,12 @@ export default function StakeCard() {
         id: hash,
         type: activeTab === "stake" ? "Deposit" : "Redeem",
         amount: amount,
-        unit: activeTab === "stake" ? "ETH" : "Shares",
+        unit: activeTab === "stake" ? "ETH" : "SKRIPSI",
         timestamp: Date.now(),
         status: "success",
       });
       setTimeout(() => { setAmount(""); }, 0);
-      alert("Transaksi Berhasil! Shares SKRIPSI Anda akan segera muncul di dompet.");
+      alert("Transaksi Berhasil! Token SKRIPSI Anda akan segera muncul di dompet.");
     }
   }, [isSuccess, hash, activeTab, amount, addActivity]);
 
@@ -117,7 +117,7 @@ export default function StakeCard() {
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === "stake" ? "bg-[#10b981] text-black" : "text-white hover:text-[#10b981]"
           }`}>
-          <Zap size={14} /> Deposit (Mint Shares)
+          <Zap size={14} /> Deposit (Mint SKRIPSI)
         </button>
         <button onClick={() => { setActiveTab("unstake"); setAmount(""); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest transition-all ${
@@ -187,10 +187,10 @@ export default function StakeCard() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="neo-card p-3 bg-gray-50 border-dashed">
                   <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs NAV</span>
-                  <div className="text-sm font-black italic">1 Share = {NAV_RATE} ETH</div>
+                  <div className="text-sm font-black italic">1 SKRIPSI = {NAV_RATE} ETH</div>
                 </div>
                 <div className="neo-card p-3 bg-[#10b981]/10 border-[#10b981]/30">
-                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi Shares</span>
+                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi Token</span>
                   <div className="text-lg font-black text-[#10b981]">{getEstimatedOutput()}</div>
                 </div>
               </div>
@@ -232,19 +232,28 @@ export default function StakeCard() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
-                    <label className="text-xs font-black uppercase">Jumlah Redeem (Shares)</label>
+                    <label className="text-xs font-black uppercase">Jumlah Redeem (SKRIPSI)</label>
                     {isConnected && sharesBalance !== undefined && (
-                      <span className="text-[9px] font-bold text-[#EF4444]/60 uppercase tracking-tight">Saldo Tersedia: {parseFloat(formatEther(sharesBalance as bigint)).toFixed(4)} SKRIPSI</span>
+                      <span className={`text-[9px] font-bold uppercase tracking-tight ${
+                        parseFloat(amount) > parseFloat(formatEther(sharesBalance as bigint)) ? "text-red-500 animate-pulse" : "text-[#EF4444]/60"
+                      }`}>
+                        Saldo Token: {parseFloat(formatEther(sharesBalance as bigint)).toFixed(4)} SKRIPSI
+                        {parseFloat(amount) > parseFloat(formatEther(sharesBalance as bigint)) && " (Saldo Tidak Cukup)"}
+                      </span>
                     )}
                   </div>
-                  <button onClick={() => setAmount(formatEther((sharesBalance as bigint) || BigInt(0)))} className="text-[10px] font-black uppercase bg-black text-white px-2 py-1 hover:bg-[#3B82F6] transition-colors rounded">Max</button>
+                  <button 
+                    onClick={() => setAmount(formatEther((sharesBalance as bigint) || BigInt(0)))} 
+                    className="text-[10px] font-black uppercase bg-black text-white px-2 py-1 hover:bg-[#3B82F6] transition-colors rounded"
+                  >
+                    MAX
+                  </button>
                 </div>
                 <div className="relative">
                   <input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)}
                     className="neo-input w-full py-4 pr-16 text-2xl font-black placeholder:text-gray-300 border-[#EF4444]" />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-end">
-                    <span className="text-base font-black text-[#EF4444]">SHARES</span>
-                    <span className="text-[10px] font-bold text-black/40 tracking-tighter">SKRIPSI</span>
+                    <span className="text-base font-black text-[#EF4444]">SKRIPSI</span>
                   </div>
                 </div>
               </div>
@@ -253,7 +262,7 @@ export default function StakeCard() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="neo-card p-3 bg-gray-50">
                   <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs</span>
-                  <div className="text-sm font-black italic">1 Share = {NAV_RATE} ETH</div>
+                  <div className="text-sm font-black italic">1 SKRIPSI = {NAV_RATE.toFixed(4)} ETH</div>
                 </div>
                 <div className="neo-card p-3 bg-[#EF4444]/10">
                   <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi ETH</span>
@@ -266,14 +275,27 @@ export default function StakeCard() {
                 <p className="text-[10px] font-bold text-black/60 uppercase leading-tight">Pokok + Imbal Hasil dikirimkan otomatis setelah antrian.</p>
               </div>
 
-              <button onClick={handleUnstake} disabled={isButtonDisabled}
+              {/* Checkbox Persetujuan untuk Redeem */}
+              <div className="flex gap-3 p-3 neo-card bg-gray-50 items-center cursor-pointer group" onClick={() => setAgreed(!agreed)}>
+                <div className={`w-5 h-5 border-2 border-black flex items-center justify-center shrink-0 transition-all rounded-md ${agreed ? "bg-[#EF4444]" : "bg-white group-hover:bg-gray-100"}`}>
+                  {agreed && <ShieldCheck size={12} className="text-white" />}
+                </div>
+                <p className="text-[10px] font-bold leading-tight text-black/60 uppercase tracking-tight">
+                  Saya mengerti bahwa penarikan LST memerlukan waktu proses sesuai antrean Beacon Chain.
+                </p>
+              </div>
+
+              <button onClick={handleUnstake} 
+                disabled={isButtonDisabled || (activeTab === "unstake" && parseFloat(amount) > parseFloat(formatEther(sharesBalance as bigint || BigInt(0))))}
                 className={`neo-btn w-full py-4 text-sm flex items-center justify-center gap-3 ${
-                  isButtonDisabled ? "bg-gray-100 text-black/20 cursor-not-allowed border-black/10 shadow-none opacity-50" : "neo-btn-red"
+                  isButtonDisabled || (activeTab === "unstake" && parseFloat(amount) > parseFloat(formatEther(sharesBalance as bigint || BigInt(0))))
+                    ? "bg-gray-100 text-black/20 cursor-not-allowed border-black/10 shadow-none opacity-50" 
+                    : "neo-btn-red"
                 }`}>
                 {isWritePending || isConfirming ? (
                   <>Memproses... <Loader2 className="animate-spin" size={18} /></>
                 ) : (
-                  <>{!isConnected ? "Hubungkan Dompet" : "Redeem Shares to Withdraw ETH"} <TrendingUp size={18} /></>
+                  <>{!isConnected ? "Hubungkan Dompet" : "Redeem SKRIPSI to Withdraw ETH"} <TrendingUp size={18} /></>
                 )}
               </button>
             </motion.div>
