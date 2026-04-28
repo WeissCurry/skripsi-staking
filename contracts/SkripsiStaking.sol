@@ -54,6 +54,25 @@ contract SkripsiStaking is ERC4626, Ownable, ReentrancyGuard {
     }
 
     /**
+     * @dev MITIGASI INFLATION ATTACK: Menambahkan virtual shares untuk mencegah 
+     * manipulasi harga share pada deposit awal.
+     */
+    function _decimalsOffset() internal view virtual override returns (uint8) {
+        return 3;
+    }
+
+    /**
+     * @dev PROTEKSI: Memaksa user menggunakan depositETH() agar integrasi Native ETH terjaga.
+     */
+    function deposit(uint256, address) public virtual override returns (uint256) {
+        revert("Gunakan depositETH() untuk staking");
+    }
+
+    function mint(uint256, address) public virtual override returns (uint256) {
+        revert("Gunakan depositETH() untuk staking");
+    }
+
+    /**
      * @dev NATIVE ETH DEPOSIT: Wraps ETH into WETH and mints shares.
      * Use this function for "Stake ETH" interactions.
      */
@@ -138,15 +157,14 @@ contract SkripsiStaking is ERC4626, Ownable, ReentrancyGuard {
      * @dev Exchange Rate: Value of 1 Share in ETH (Fixed Point 18).
      */
     function getExchangeRate() public view returns (uint256) {
-        if (totalSupply() == 0) return 1e18;
-        return (totalAssets() * 1e18) / totalSupply();
+        return convertToAssets(1e18);
     }
 
     /**
      * @dev Fallback to wrap ETH sent to the contract.
      */
     receive() external payable {
-        if (msg.value > 0) {
+        if (msg.value > 0 && msg.sender != address(weth)) {
             weth.deposit{value: msg.value}();
         }
     }

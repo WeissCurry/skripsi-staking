@@ -93,10 +93,16 @@ export default function StakeCard() {
         timestamp: Date.now(),
         status: "success",
       });
-      setTimeout(() => { setAmount(""); }, 0);
+      
+      // Menggunakan setTimeout untuk menghindari cascading renders (lint error)
+      setTimeout(() => {
+        setAmount("");
+      }, 0);
+      
       alert("Transaksi Berhasil! Token SKRIPSI Anda akan segera muncul di dompet.");
     }
-  }, [isSuccess, hash, activeTab, amount, addActivity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, hash]); // Cukup bergantung pada status sukses dan hash transaksi
 
   return (
     <div className="neo-card bg-white w-full mx-auto overflow-hidden">

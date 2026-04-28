@@ -1,10 +1,11 @@
 /**
  * @dev Alamat Kontrak untuk Jaringan Ethereum Sepolia.
- * Gantilah alamat di bawah ini setelah Anda melakukan deploy menggunakan Remix atau Hardhat.
+ * Diambil dari environment variables (.env.local).
  */
 export const CONTRACT_ADDRESSES = {
   SEPOLIA: {
-    SKRIPSI_STAKING: "0x27F4fd9d4ed60eD2782fD97Df6Fe74f7EF28E8e6", // Deployed ERC-4626 SkripsiStaking
+    SKRIPSI_STAKING: (process.env.NEXT_PUBLIC_SKRIPSI_STAKING_ADDRESS) as `0x${string}`,
+    WETH: (process.env.NEXT_PUBLIC_WETH_ADDRESS || "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9") as `0x${string}`,
   }
 };
 
