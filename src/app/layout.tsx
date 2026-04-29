@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "AmanahStaking | Shariah-Compliant ETH Staking",
+  title: "SkripsiStaking",
   description: "Enterprise-grade Risk Management Dashboard for Shariah-Compliant Ethereum Staking (Wakalah bil Istithmar)",
 };
 
