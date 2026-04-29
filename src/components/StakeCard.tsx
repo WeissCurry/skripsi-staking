@@ -43,7 +43,11 @@ export default function StakeCard() {
     query: { enabled: isConnected, refetchInterval: 10000 }
   });
 
-  const NAV_RATE = navRateRaw ? parseFloat(formatEther(navRateRaw as bigint)) : 1.0;
+  // Kompensasi untuk _decimalsOffset = 3 di Smart Contract
+  // Agar secara visual 1 ETH = 1 SKRIPSI di awal
+  const OFFSET_MULTIPLIER = 1000; 
+  const NAV_RATE = navRateRaw ? parseFloat(formatEther(navRateRaw as bigint)) * OFFSET_MULTIPLIER : 1.0;
+  
   const POOL_FILLED = 1500;
   const POOL_TOTAL = 2048;
 
@@ -70,12 +74,14 @@ export default function StakeCard() {
       address: CONTRACT_ADDRESSES.SEPOLIA.SKRIPSI_STAKING as `0x${string}`,
       abi: SkripsiStakingABI,
       functionName: "redeemETH",
-      args: [parseEther(amount)],
+      args: [parseEther((parseFloat(amount) * OFFSET_MULTIPLIER).toString())],
     });
   };
 
   const getEstimatedOutput = () => {
     const val = parseFloat(amount) || 0;
+    // Jika stake: ETH / NAV_RATE. Jika unstake: SKRIPSI * NAV_RATE
+    // Karena kita sudah mengalikan NAV_RATE dengan 1000, maka pembagian/perkalian ini akan menghasilkan angka 1:1
     return activeTab === "stake" ? (val / NAV_RATE).toFixed(4) : (val * NAV_RATE).toFixed(4);
   };
 
@@ -123,13 +129,13 @@ export default function StakeCard() {
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === "stake" ? "bg-[#10b981] text-black" : "text-white hover:text-[#10b981]"
           }`}>
-          <Zap size={14} /> Deposit (Mint SKRIPSI)
+          <Zap size={14} /> Deposit
         </button>
         <button onClick={() => { setActiveTab("unstake"); setAmount(""); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === "unstake" ? "bg-[#EF4444] text-white" : "text-white hover:text-[#EF4444]"
           }`}>
-          <RefreshCcw size={14} /> Redeem (Withdraw ETH)
+          <RefreshCcw size={14} /> Redeem
         </button>
       </div>
 
@@ -191,12 +197,14 @@ export default function StakeCard() {
 
               {/* NAV Info */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="neo-card p-3 bg-gray-50 border-dashed">
-                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs NAV</span>
-                  <div className="text-sm font-black italic">1 SKRIPSI = {NAV_RATE} ETH</div>
+                <div className="neo-card p-3 bg-gray-50 border-dashed border-black/20">
+                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs Saat Ini (NAV)</span>
+                  <div className="text-sm font-black italic flex items-center gap-1">
+                    1 SKRIPSI = <span className="text-[#10b981]">{NAV_RATE.toFixed(4)}</span> ETH
+                  </div>
                 </div>
                 <div className="neo-card p-3 bg-[#10b981]/10 border-[#10b981]/30">
-                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi Token</span>
+                  <span className="text-[10px] font-black uppercase text-[#10b981]/60 block mb-1">Estimasi SKRIPSI</span>
                   <div className="text-lg font-black text-[#10b981]">{getEstimatedOutput()}</div>
                 </div>
               </div>
@@ -243,13 +251,13 @@ export default function StakeCard() {
                       <span className={`text-[9px] font-bold uppercase tracking-tight ${
                         parseFloat(amount) > parseFloat(formatEther(sharesBalance as bigint)) ? "text-red-500 animate-pulse" : "text-[#EF4444]/60"
                       }`}>
-                        Saldo Token: {parseFloat(formatEther(sharesBalance as bigint)).toFixed(4)} SKRIPSI
+                        Saldo Token: {(parseFloat(formatEther(sharesBalance as bigint)) / OFFSET_MULTIPLIER).toFixed(4)} SKRIPSI
                         {parseFloat(amount) > parseFloat(formatEther(sharesBalance as bigint)) && " (Saldo Tidak Cukup)"}
                       </span>
                     )}
                   </div>
                   <button 
-                    onClick={() => setAmount(formatEther((sharesBalance as bigint) || BigInt(0)))} 
+                    onClick={() => setAmount((parseFloat(formatEther((sharesBalance as bigint) || BigInt(0))) / OFFSET_MULTIPLIER).toString())} 
                     className="text-[10px] font-black uppercase bg-black text-white px-2 py-1 hover:bg-[#3B82F6] transition-colors rounded"
                   >
                     MAX
@@ -266,12 +274,14 @@ export default function StakeCard() {
 
               {/* NAV Info */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="neo-card p-3 bg-gray-50">
-                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs</span>
-                  <div className="text-sm font-black italic">1 SKRIPSI = {NAV_RATE.toFixed(4)} ETH</div>
+                <div className="neo-card p-3 bg-gray-50 border-dashed border-black/20">
+                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Kurs Saat Ini (NAV)</span>
+                  <div className="text-sm font-black italic flex items-center gap-1">
+                    1 SKRIPSI = <span className="text-[#EF4444]">{NAV_RATE.toFixed(4)}</span> ETH
+                  </div>
                 </div>
-                <div className="neo-card p-3 bg-[#EF4444]/10">
-                  <span className="text-[10px] font-black uppercase text-black/40 block mb-1">Estimasi ETH</span>
+                <div className="neo-card p-3 bg-[#EF4444]/10 border-[#EF4444]/30">
+                  <span className="text-[10px] font-black uppercase text-[#EF4444]/60 block mb-1">Estimasi ETH</span>
                   <div className="text-lg font-black text-[#EF4444]">{getEstimatedOutput()}</div>
                 </div>
               </div>
@@ -287,7 +297,7 @@ export default function StakeCard() {
                   {agreed && <ShieldCheck size={12} className="text-white" />}
                 </div>
                 <p className="text-[10px] font-bold leading-tight text-black/60 uppercase tracking-tight">
-                  Saya mengerti bahwa penarikan LST memerlukan waktu proses sesuai antrean Beacon Chain.
+                  Saya mengerti bahwa penarikan SKRIPSI memerlukan waktu proses sesuai antrean Beacon Chain.
                 </p>
               </div>
 

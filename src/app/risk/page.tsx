@@ -40,7 +40,7 @@ export default function RiskPage() {
         <RiskIndicatorCard
           title="Kedalaman Likuiditas"
           status="Optimal"
-          desc="Likuiditas exit LST > 10.000 ETH di DEX utama."
+          desc="Likuiditas exit SKRIPSI > 10.000 ETH di DEX utama."
           icon={<AlertCircle className="text-[#A855F7]" size={18} />}
           color="bg-[#A855F7]/10"
         />

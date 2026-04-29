@@ -12,6 +12,11 @@
   --color-neo-border: #000000;
   
   --radius-neo: 16px;
+
+  @keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
 }
 
 :root {
@@ -28,7 +33,6 @@
 }
 
 @layer components {
-  /* Neo Brutalist Utility Classes - Compact */
   .neo-card {
     @apply bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all rounded-[10px];
   }
@@ -56,6 +60,12 @@
   }
 }
 
+@layer utilities {
+  .animate-spin-reverse {
+    animation: spin-reverse 1s linear infinite;
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
@@ -66,4 +76,3 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-black border-2 border-background;
 }
-

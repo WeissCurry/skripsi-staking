@@ -24,6 +24,7 @@ import {
   Area
 } from "recharts";
 import StakeCard from "@/components/StakeCard";
+import ClientDiversityPanel from "@/components/ClientDiversityPanel";
 import { useReadContract } from "wagmi";
 import { formatEther } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
@@ -59,17 +60,32 @@ export default function Dashboard() {
     query: { refetchInterval: 10000 }
   });
 
-  const navRate = navRateRaw ? parseFloat(formatEther(navRateRaw as bigint)) : 1.0;
+  // Kompensasi untuk _decimalsOffset = 3 di Smart Contract
+  const OFFSET_MULTIPLIER = 1000;
+  const navRate = navRateRaw ? parseFloat(formatEther(navRateRaw as bigint)) * OFFSET_MULTIPLIER : 1.0;
 
-  // Mock data untuk historis (Data real-time disisipkan di titik terakhir)
-  const chartData = [
-    { name: "Apr 22", staked: 800, nav: 1.000 },
-    { name: "Apr 23", staked: 950, nav: 1.005 },
-    { name: "Apr 24", staked: 1100, nav: 1.008 },
-    { name: "Apr 25", staked: 1150, nav: 1.012 },
-    { name: "Apr 26", staked: 1200, nav: 1.015 },
-    { name: "Hari Ini", staked: totalAssets ? parseFloat(formatEther(totalAssets as bigint)) : 1245, nav: navRate },
-  ];
+  // Generate Dynamic Chart Data (Synthetic Growth based on real current values)
+  const chartData = React.useMemo(() => {
+    const currentStaked = totalAssets ? parseFloat(formatEther(totalAssets as bigint)) : 1671;
+    const currentNav = navRate;
+    
+    // Kita buat 6 titik data ke belakang
+    return Array.from({ length: 6 }).map((_, i) => {
+      const dayOffset = 5 - i;
+      const date = new Date();
+      date.setDate(date.getDate() - dayOffset);
+      
+      // Simulasi pertumbuhan mundur (misal 0.2% staked per hari, 0.05% nav per hari)
+      const stakedFactor = 1 - (dayOffset * 0.02); 
+      const navFactor = 1 - (dayOffset * 0.001);
+
+      return {
+        name: dayOffset === 0 ? "Hari Ini" : date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        staked: parseFloat((currentStaked * stakedFactor).toFixed(2)),
+        nav: parseFloat((currentNav * navFactor).toFixed(4)),
+      };
+    });
+  }, [totalAssets, navRate]);
 
   const filteredPools = React.useMemo(() => {
     const result = filter === "All" ? [...POOLS] : POOLS.filter(p => p.status === filter);
@@ -84,9 +100,9 @@ export default function Dashboard() {
       {/* Top Summary Row */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total ETH Di-stake" val={formattedTotal} sub="+2,4% vs bulan lalu" icon={<Gem size={15} />} color="bg-[#10b981]" />
-        <StatCard label="Imbal Hasil LST" val={`${((navRate - 1) * 100).toFixed(2)}%`} sub="Kenaikan Nilai NAV" icon={<Activity size={15} />} color="bg-[#3B82F6]" />
+        <StatCard label="Imbal Hasil SKRIPSI" val={`${((navRate - 1) * 100).toFixed(2)}%`} sub="Kenaikan Nilai NAV" icon={<Activity size={15} />} color="bg-[#3B82F6]" />
         <StatCard label="Validator Aman" val="32 Unit" sub="100% Syariah" icon={<ShieldCheck size={15} />} color="bg-[#FDE047]" />
-        <StatCard label="Kurs LST/ETH" val={navRate.toFixed(4)} sub="1 Share dalam ETH" icon={<TrendingUp size={15} />} color="bg-[#A855F7]" />
+        <StatCard label="Kurs SKRIPSI/ETH" val={navRate.toFixed(4)} sub="1 Share dalam ETH" icon={<TrendingUp size={15} />} color="bg-[#A855F7]" />
       </section>
 
       {/* Performance & Client Diversity Row */}
@@ -142,53 +158,7 @@ export default function Dashboard() {
 
         {/* Client Diversity (Nakamoto) */}
         <div className="lg:col-span-4">
-          <div className="neo-card p-4 bg-white h-[320px]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-[#A855F7] border-2 border-black flex items-center justify-center rounded-md">
-                  <Layers size={18} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black uppercase italic leading-none">Client Diversity</h3>
-                  <p className="text-[9px] font-bold text-black/40 uppercase mt-1">Hifzul Mal Indicator</p>
-                </div>
-              </div>
-              <div className="neo-badge bg-black text-white text-[9px]">Skor: Tinggi</div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                 <div className="flex justify-between text-[9px] font-black uppercase">
-                    <span>Geth (Execution)</span>
-                    <span className="text-[#EF4444]">60%</span>
-                 </div>
-                 <div className="h-3 w-full bg-gray-100 border-2 border-black rounded-sm overflow-hidden">
-                    <div className="h-full bg-[#EF4444]" style={{ width: '60%' }} />
-                 </div>
-              </div>
-              <div className="space-y-2">
-                 <div className="flex justify-between text-[9px] font-black uppercase">
-                    <span>Teku (Consensus)</span>
-                    <span>25%</span>
-                 </div>
-                 <div className="h-3 w-full bg-gray-100 border-2 border-black rounded-sm overflow-hidden">
-                    <div className="h-full bg-[#10b981]" style={{ width: '25%' }} />
-                 </div>
-              </div>
-              <div className="space-y-2">
-                 <div className="flex justify-between text-[9px] font-black uppercase">
-                    <span>Prysm (Consensus)</span>
-                    <span>15%</span>
-                 </div>
-                 <div className="h-3 w-full bg-gray-100 border-2 border-black rounded-sm overflow-hidden">
-                    <div className="h-full bg-[#3B82F6]" style={{ width: '15%' }} />
-                 </div>
-              </div>
-              <p className="text-[9px] font-bold text-black/60 italic mt-4 leading-tight">
-                *Peringatan: Dominasi Geth &gt; 66% berisiko tinggi terhadap finalitas jaringan.
-              </p>
-            </div>
-          </div>
+          <ClientDiversityPanel />
         </div>
       </section>
 
