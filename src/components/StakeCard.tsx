@@ -32,8 +32,8 @@ export default function StakeCard() {
   });
 
   // Hook untuk Transaksi
-  const { data: hash, writeContract, isPending: isWritePending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { data: hash, writeContract, isPending: isWritePending, error: writeError, isError: isWriteError } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess, isError: isConfirmError, error: confirmError } = useWaitForTransactionReceipt({ hash });
 
   // Hook untuk Membaca NAV Rate
   const { data: navRateRaw } = useReadContract({
@@ -44,7 +44,6 @@ export default function StakeCard() {
   });
 
   // Kompensasi untuk _decimalsOffset = 3 di Smart Contract
-  // Agar secara visual 1 ETH = 1 SKRIPSI di awal
   const OFFSET_MULTIPLIER = 1000; 
   const NAV_RATE = navRateRaw ? parseFloat(formatEther(navRateRaw as bigint)) * OFFSET_MULTIPLIER : 1.0;
   
@@ -80,8 +79,6 @@ export default function StakeCard() {
 
   const getEstimatedOutput = () => {
     const val = parseFloat(amount) || 0;
-    // Jika stake: ETH / NAV_RATE. Jika unstake: SKRIPSI * NAV_RATE
-    // Karena kita sudah mengalikan NAV_RATE dengan 1000, maka pembagian/perkalian ini akan menghasilkan angka 1:1
     return activeTab === "stake" ? (val / NAV_RATE).toFixed(4) : (val * NAV_RATE).toFixed(4);
   };
 
@@ -90,6 +87,19 @@ export default function StakeCard() {
   const { addActivity } = useActivity();
 
   useEffect(() => {
+    // 1. Handle Pending State (Saat hash pertama kali muncul)
+    if (hash && !isSuccess && !isWriteError && !isConfirmError) {
+      addActivity({
+        id: hash,
+        type: activeTab === "stake" ? "Deposit" : "Redeem",
+        amount: amount,
+        unit: activeTab === "stake" ? "ETH" : "SKRIPSI",
+        timestamp: Date.now(),
+        status: "pending",
+      });
+    }
+
+    // 2. Handle Success State
     if (isSuccess && hash) {
       addActivity({
         id: hash,
@@ -100,15 +110,31 @@ export default function StakeCard() {
         status: "success",
       });
       
-      // Menggunakan setTimeout untuk menghindari cascading renders (lint error)
       setTimeout(() => {
         setAmount("");
       }, 0);
       
-      alert("Transaksi Berhasil! Token SKRIPSI Anda akan segera muncul di dompet.");
+      alert(`Transaksi Berhasil! ${activeTab === "stake" ? "Token SKRIPSI" : "ETH"} Anda akan segera muncul di dompet.`);
+    }
+
+    // 3. Handle Error State
+    if (isWriteError || isConfirmError) {
+      const errorMsg = (writeError || confirmError)?.message || "Terjadi kesalahan pada transaksi.";
+      console.error("Transaction Error:", errorMsg);
+      
+      addActivity({
+        id: hash || `error-${Date.now()}`,
+        type: activeTab === "stake" ? "Deposit" : "Redeem",
+        amount: amount,
+        unit: activeTab === "stake" ? "ETH" : "SKRIPSI",
+        timestamp: Date.now(),
+        status: "failed",
+      });
+
+      alert(`Transaksi Gagal: ${errorMsg.slice(0, 100)}...`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, hash]); // Cukup bergantung pada status sukses dan hash transaksi
+  }, [isSuccess, isWriteError, isConfirmError, hash]);
 
   return (
     <div className="neo-card bg-white w-full mx-auto overflow-hidden">

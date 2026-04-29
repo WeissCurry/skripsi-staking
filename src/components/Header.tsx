@@ -356,7 +356,7 @@ export default function Header() {
                     </div>
                   ) : (
                     <div className="divide-y-2 divide-black">
-                      {activities.map((activity) => (
+                      {activities.slice(0, 3).map((activity) => (
                         <div key={activity.id} className="p-3 hover:bg-gray-50 transition-colors group">
                           <div className="flex justify-between items-start mb-1">
                             <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 border border-black rounded-md ${
