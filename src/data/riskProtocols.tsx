@@ -55,7 +55,7 @@ export const protocols: Protocol[] = [
       { label: "Redundancy", score: 2, maxScore: 2, icon: <Target size={12} />, description: "Single-Node" },
     ],
     financial: [
-      { label: "Liquidity Constraint", score: 1, maxScore: 3, icon: <Activity size={12} />, description: "Cepat (< 2 hari)" },
+      { label: "Liquidity Constraint", score: 3, maxScore: 3, icon: <Activity size={12} />, description: "Lama (7.8 hari)" },
     ]
   },
   {
