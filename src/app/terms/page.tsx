@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function TermsPage() {
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto py-6">
+    <div className="flex flex-col gap-6 max-w-4xl mx-auto py-6 text-justify">
       <div className="flex items-center gap-4">
         <Link href="/" className="neo-btn neo-btn-white p-3">
           <ArrowLeft size={20} />
@@ -20,7 +20,7 @@ export default function TermsPage() {
             <ShieldCheck size={20} /> 1. Dasar Akad
           </h3>
           <p className="text-sm font-bold leading-relaxed text-black/70">
-            Layanan Staking ini menggunakan akad **Wakalah bil Istithmar** (Delegasi Investasi). 
+            Layanan Staking ini menggunakan akad Wakalah bil Istithmar (Delegasi Investasi). 
             Pengguna (Muwakkil) memberikan kuasa kepada Protokol (Wakil) untuk mengelola aset ETH 
             ke dalam jaringan validator Ethereum sesuai dengan prinsip Syariah.
           </p>
@@ -42,7 +42,7 @@ export default function TermsPage() {
             <FileText size={20} /> 3. Hak dan Kewajiban Wakil (Protokol)
           </h3>
           <ul className="list-disc pl-5 text-sm font-bold space-y-2 text-black/70">
-            <li>Wakil wajib mengelola infrastruktur validator dengan prinsip kehati-hatian (*Hifzul Mal*).</li>
+            <li>Wakil wajib mengelola infrastruktur validator dengan prinsip kehati-hatian (Hifzul Mal).</li>
             <li>Wakil berhak menerima biaya jasa (Ujrah) sebesar 5% dari total imbal hasil yang diperoleh.</li>
             <li>Wakil wajib memberikan transparansi mengenai risiko operasional dan status validator.</li>
           </ul>
@@ -53,7 +53,7 @@ export default function TermsPage() {
             <FileText size={20} /> 4. Risiko dan Mitigasi
           </h3>
           <p className="text-sm font-bold leading-relaxed text-black/70">
-            Staking melibatkan risiko teknis seperti *Slashing* atau *Uptime penalty*. Protokol melakukan 
+            Staking melibatkan risiko teknis seperti Slashing atau Uptime penalty. Protokol melakukan 
             mitigasi melalui sistem pemantauan risiko MSIM untuk meminimalkan potensi kerugian dana Muwakkil.
           </p>
         </section>

@@ -68,7 +68,7 @@ export default function AuditModal({ current, setSelectedId, lastUpdate }: Props
             <div className="lg:col-span-4 flex flex-col gap-4">
               <div className={`neo-card p-6 flex flex-col items-center justify-center text-center ${current.colorClass} border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}>
                  <span className="text-[9px] font-black uppercase tracking-widest mb-2 opacity-50">Risk Score</span>
-                 <div className="text-6xl font-black italic tracking-tighter leading-none mb-2">{current.totalScore}<span className="text-xl opacity-30">/21</span></div>
+                 <div className="text-6xl font-black italic tracking-tighter leading-none mb-2">{current.totalScore}<span className="text-xl opacity-30">/22</span></div>
                  <div className="bg-black text-white px-4 py-1.5 rounded-lg font-black uppercase italic text-sm"> {current.gradeLabel} </div>
               </div>
 
@@ -128,14 +128,26 @@ export default function AuditModal({ current, setSelectedId, lastUpdate }: Props
           </div>
         </div>
 
-        <div className="p-3 border-t-2 border-black bg-white flex justify-between items-center">
+        <div className="p-3 border-t-2 border-black bg-white flex justify-between items-center gap-4">
            <div className="flex items-center gap-2">
               <Info size={16} className="text-[#3B82F6]" />
               <span className="text-[8px] font-black uppercase text-black/40 italic">
                   Last Updated: {lastUpdate} | Database Audit Hash: 0x82f...a10b
               </span>
            </div>
-           <button onClick={() => setSelectedId(null)} className="neo-btn neo-btn-white px-8 py-2 text-[10px] font-black italic uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] border-2 border-black">Tutup</button>
+           <div className="flex items-center gap-2">
+              <button onClick={() => setSelectedId(null)} className="neo-btn neo-btn-white px-6 py-2 text-[10px] font-black italic uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] border-2 border-black">Tutup</button>
+              <button 
+                disabled={current.isVetoed}
+                className={`neo-btn px-10 py-2 text-[10px] font-black italic uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] border-2 border-black transition-all ${
+                  current.isVetoed 
+                    ? "bg-gray-100 text-black/20 cursor-not-allowed border-black/10 shadow-none" 
+                    : "bg-[#10b981] text-black hover:bg-black hover:text-[#10b981]"
+                }`}
+              >
+                {current.isVetoed ? "Investasi Dilarang" : "Stake Now"}
+              </button>
+           </div>
         </div>
       </motion.div>
     </div>

@@ -45,14 +45,14 @@ export const protocols: Protocol[] = [
       { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "Data on-chain transparan" },
     ],
     operational: [
-      { label: "Uptime (RAVER)", score: 1, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Uptime > 99.9%" },
+      { label: "Uptime (RAVER)", score: 2, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Uptime > 99.9%" },
       { label: "Slashing History", score: 1, maxScore: 2, icon: <ShieldCheck size={12} />, description: "Rekam jejak bersih" },
-      { label: "Client Diversity", score: 1, maxScore: 3, icon: <Globe size={12} />, description: "Minoritas (<33%)" },
+      { label: "Client Diversity", score: 2, maxScore: 3, icon: <Globe size={12} />, description: "Minoritas (<33%)" },
     ],
     technological: [
-      { label: "SC Security", score: 1, maxScore: 2, icon: <Lock size={12} />, description: "Audited & Verified" },
-      { label: "Key Management", score: 1, maxScore: 2, icon: <Database size={12} />, description: "DVT Technology" },
-      { label: "Redundancy", score: 1, maxScore: 2, icon: <Target size={12} />, description: "Failover otomatis" },
+      { label: "SC Security", score: 2, maxScore: 3, icon: <Lock size={12} />, description: "Verified / Not Audited" },
+      { label: "Key Management", score: 2, maxScore: 2, icon: <Database size={12} />, description: "Single-Signature" },
+      { label: "Redundancy", score: 2, maxScore: 2, icon: <Target size={12} />, description: "Single-Node" },
     ],
     financial: [
       { label: "Liquidity Constraint", score: 1, maxScore: 3, icon: <Activity size={12} />, description: "Cepat (< 2 hari)" },
@@ -65,19 +65,19 @@ export const protocols: Protocol[] = [
     description: "Protokol liquid staking populer, namun memiliki celah kepatuhan pada mekanisme reward.",
     status: "Audited",
     compliance: [
-      { label: "Mekanisme Akad", score: 0, maxScore: 1, icon: <Scale size={12} />, description: "Akad tidak formal" },
-      { label: "Potensi Riba", score: 1, maxScore: 1, icon: <Zap size={12} />, description: "Mekanisme Rebase" },
+      { label: "Mekanisme Akad", score: 1, maxScore: 1, icon: <Scale size={12} />, description: "Akad tidak formal" },
+      { label: "Potensi Riba", score: 0, maxScore: 1, icon: <Zap size={12} />, description: "Murni bagi hasil (NAV)" },
       { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "Delegasi otomatis" },
     ],
     operational: [
       { label: "Uptime (RAVER)", score: 2, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Dikelola pihak ketiga" },
       { label: "Slashing History", score: 1, maxScore: 2, icon: <ShieldCheck size={12} />, description: "Insiden minor" },
-      { label: "Client Diversity", score: 2, maxScore: 3, icon: <Globe size={12} />, description: "Client mayoritas" },
+      { label: "Client Diversity", score: 3, maxScore: 3, icon: <Globe size={12} />, description: "Client mayoritas" },
     ],
     technological: [
-      { label: "SC Security", score: 1, maxScore: 2, icon: <Lock size={12} />, description: "Audited by Top Firms" },
-      { label: "Key Management", score: 2, maxScore: 2, icon: <Database size={12} />, description: "Semi-custodial" },
-      { label: "Redundancy", score: 2, maxScore: 2, icon: <Target size={12} />, description: "Tergantung operator" },
+      { label: "SC Security", score: 1, maxScore: 3, icon: <Lock size={12} />, description: "Verified & Audited" },
+      { label: "Key Management", score: 1, maxScore: 2, icon: <Database size={12} />, description: "Multisig/DVT" },
+      { label: "Redundancy", score: 1, maxScore: 2, icon: <Target size={12} />, description: "Multi-Node" },
     ],
     financial: [
       { label: "Liquidity Constraint", score: 1, maxScore: 3, icon: <Activity size={12} />, description: "Likuiditas instan" },

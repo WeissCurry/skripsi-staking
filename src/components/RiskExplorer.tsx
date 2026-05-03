@@ -113,16 +113,35 @@ export default function RiskExplorer() {
       const allMetrics = [...p.compliance, ...operational, ...technological, ...p.financial];
       const totalScore = allMetrics.reduce((acc, m) => acc + m.score, 0);
 
-      let riskGrade = "Aman"; let gradeLabel = "Investment Grade"; let colorClass = "bg-[#10b981]"; let zone: "green" | "yellow" | "red" | "veto" = "green";
-      if (isVetoed) { riskGrade = "TIDAK PATUH"; gradeLabel = "Veto Syariah"; colorClass = "bg-[#EF4444]"; zone = "veto"; }
-      else if (totalScore >= 17) { riskGrade = "BAHAYA"; gradeLabel = "High-Risk"; colorClass = "bg-[#EF4444]"; zone = "red"; }
-      else if (totalScore >= 12) { riskGrade = "WASPADA"; gradeLabel = "Speculative Grade"; colorClass = "bg-[#FDE047]"; zone = "yellow"; }
+      let riskGrade = "Aman"; 
+      let gradeLabel = "Investment Grade"; 
+      let colorClass = "bg-[#10b981]"; 
+      let zone: "green" | "yellow" | "red" | "veto" = "green";
+
+      if (isVetoed) { 
+        riskGrade = "TIDAK PATUH"; 
+        gradeLabel = "Veto Syariah"; 
+        colorClass = "bg-[#EF4444]"; 
+        zone = "veto"; 
+      }
+      else if (totalScore >= 17) { 
+        riskGrade = "BAHAYA"; 
+        gradeLabel = "High-Risk"; 
+        colorClass = "bg-[#EF4444]"; 
+        zone = "red"; 
+      }
+      else if (totalScore >= 12) { 
+        riskGrade = "WASPADA"; 
+        gradeLabel = "Speculative Grade"; 
+        colorClass = "bg-[#FDE047]"; 
+        zone = "yellow"; 
+      }
 
       const radarData = [
         { subject: 'A', A: isVetoed ? 100 : Math.max(10, (p.compliance.reduce((a, b) => a + b.score, 0) / 3) * 100), fullMark: 100 },
-        { subject: 'B', A: Math.max(10, ((operational.reduce((a, b) => a + b.score, 0) - 3) / 6) * 100), fullMark: 100 },
-        { subject: 'C', A: Math.max(10, ((technological.reduce((a, b) => a + b.score, 0) - 3) / 3) * 100), fullMark: 100 },
-        { subject: 'D', A: Math.max(10, ((p.financial.reduce((a, b) => a + b.score, 0) - 1) / 2) * 100), fullMark: 100 },
+        { subject: 'B', A: Math.max(10, (operational.reduce((a, b) => a + b.score, 0) / 9) * 100), fullMark: 100 },
+        { subject: 'C', A: Math.max(10, (technological.reduce((a, b) => a + b.score, 0) / 7) * 100), fullMark: 100 },
+        { subject: 'D', A: Math.max(10, (p.financial.reduce((a, b) => a + b.score, 0) / 3) * 100), fullMark: 100 },
       ];
 
       return { ...p, operational, technological, totalScore, isVetoed, riskGrade, gradeLabel, colorClass, zone, radarData, pillars: [
