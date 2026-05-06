@@ -43,7 +43,7 @@ export default function AuditModal({ current, setSelectedId, lastUpdate }: Props
         <div className="p-3 border-b-[3px] border-black flex justify-between items-center bg-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white border-2 border-black flex items-center justify-center rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <Image src={current.iconPath} alt={current.name} width={28} height={28} className="object-contain" />
+              <Image src={current.iconPath} alt={current.name} width={28} height={28} className="object-contain" unoptimized />
             </div>
             <div>
               <h3 className="text-xl font-black uppercase italic leading-none">{current.name}</h3>

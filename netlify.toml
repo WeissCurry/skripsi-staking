@@ -9,12 +9,6 @@
   NODE_VERSION = "20"
   PNPM_FLAGS = "--no-frozen-lockfile"
 
-# Redirects untuk handling client-side routing Next.js jika diperlukan
-[[redirects]]
-  from = "/*"
-  to = "/.next/server/pages/:splat"
-  status = 200
-
 # Cache control untuk performa optimal
 [[headers]]
   for = "/_next/static/*"

@@ -36,7 +36,7 @@ export const protocols: Protocol[] = [
   {
     id: "solo", 
     name: "Solo Staking (Syariah)", 
-    iconPath: "/solo staking logo.png",
+    iconPath: "/solo-staking-logo.png",
     description: "Model staking mandiri dengan kontrol penuh atas validator, mematuhi prinsip syariah sepenuhnya.",
     status: "Audited",
     compliance: [
@@ -61,7 +61,7 @@ export const protocols: Protocol[] = [
   {
     id: "lido", 
     name: "Lido Finance", 
-    iconPath: "/lido finance logo.png",
+    iconPath: "/lido-finance-logo.png",
     description: "Protokol liquid staking populer, namun memiliki celah kepatuhan pada mekanisme reward.",
     status: "Audited",
     compliance: [
@@ -83,9 +83,9 @@ export const protocols: Protocol[] = [
       { label: "Liquidity Constraint", score: 1, maxScore: 3, icon: <Activity size={12} />, description: "Likuiditas instan" },
     ]
   },
-  { id: "rocket", name: "Rocket Pool", status: "Upcoming", iconPath: "/rocket pool logo.jpeg", description: "Protokol staking terdesentralisasi.", compliance: [], operational: [], technological: [], financial: [] },
-  { id: "ssv", name: "SSV Network (DVT)", status: "Upcoming", iconPath: "/SSV logo.png", description: "Infrastruktur DVT terdistribusi.", compliance: [], operational: [], technological: [], financial: [] },
-  { id: "etherfi", name: "Ether.Fi", status: "Upcoming", iconPath: "/ether.fi logo.png", description: "Non-custodial liquid staking.", compliance: [], operational: [], technological: [], financial: [] },
-  { id: "binance", name: "Binance Staking", status: "Upcoming", iconPath: "/Binance logo.webp", description: "Layanan staking bursa terpusat.", compliance: [], operational: [], technological: [], financial: [] },
-  { id: "coinbase", name: "Coinbase Cloud", status: "Upcoming", iconPath: "/Coinbase logo.png", description: "Staking institusional terpercaya.", compliance: [], operational: [], technological: [], financial: [] },
+  { id: "rocket", name: "Rocket Pool", status: "Upcoming", iconPath: "/rocket-pool-logo.jpeg", description: "Protokol staking terdesentralisasi.", compliance: [], operational: [], technological: [], financial: [] },
+  { id: "ssv", name: "SSV Network (DVT)", status: "Upcoming", iconPath: "/ssv-logo.png", description: "Infrastruktur DVT terdistribusi.", compliance: [], operational: [], technological: [], financial: [] },
+  { id: "etherfi", name: "Ether.Fi", status: "Upcoming", iconPath: "/ether-fi-logo.png", description: "Non-custodial liquid staking.", compliance: [], operational: [], technological: [], financial: [] },
+  { id: "binance", name: "Binance Staking", status: "Upcoming", iconPath: "/binance-logo.webp", description: "Layanan staking bursa terpusat.", compliance: [], operational: [], technological: [], financial: [] },
+  { id: "coinbase", name: "Coinbase Cloud", status: "Upcoming", iconPath: "/coinbase-logo.png", description: "Staking institusional terpercaya.", compliance: [], operational: [], technological: [], financial: [] },
 ];

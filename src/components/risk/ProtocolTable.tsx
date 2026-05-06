@@ -37,7 +37,7 @@ export default function ProtocolTable({ protocolData, setSelectedId }: Props) {
                 <td className="p-4">
                   <div className="flex items-center gap-4">
                     <div className={`w-14 h-14 border-4 border-black bg-white flex items-center justify-center rounded-xl transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${p.status === "Upcoming" ? 'grayscale opacity-50' : 'group-hover:rotate-6'}`}>
-                      <Image src={p.iconPath} alt={p.name} width={40} height={40} className="object-contain" />
+                      <Image src={p.iconPath} alt={p.name} width={40} height={40} className="object-contain" unoptimized />
                     </div>
                     <div>
                       <div className={`font-black uppercase text-sm leading-none mb-1.5 ${p.status === "Upcoming" ? 'text-black/40' : ''}`}>{p.name}</div>
