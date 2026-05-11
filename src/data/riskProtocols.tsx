@@ -47,7 +47,7 @@ export const protocols: Protocol[] = [
     operational: [
       { label: "Uptime (RAVER)", score: 2, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Uptime > 99.9%" },
       { label: "Slashing History", score: 1, maxScore: 2, icon: <ShieldCheck size={12} />, description: "Rekam jejak bersih" },
-      { label: "Client Diversity", score: 2, maxScore: 3, icon: <Globe size={12} />, description: "Minoritas (<33%)" },
+      { label: "Client Diversity", score: 2, maxScore: 3, icon: <Globe size={12} />, description: "Minoritas (s<33%)" },
     ],
     technological: [
       { label: "SC Security", score: 2, maxScore: 3, icon: <Lock size={12} />, description: "Verified / Not Audited" },
@@ -65,14 +65,14 @@ export const protocols: Protocol[] = [
     description: "Protokol liquid staking populer, namun memiliki celah kepatuhan pada mekanisme reward.",
     status: "Audited",
     compliance: [
-      { label: "Mekanisme Akad", score: 1, maxScore: 1, icon: <Scale size={12} />, description: "Akad tidak formal" },
-      { label: "Potensi Riba", score: 0, maxScore: 1, icon: <Zap size={12} />, description: "Murni bagi hasil (NAV)" },
-      { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "Delegasi otomatis" },
+      { label: "Mekanisme Akad", score: 0, maxScore: 1, icon: <Scale size={12} />, description: "Terstandarisasi" },
+      { label: "Potensi Riba", score: 1, maxScore: 1, icon: <Zap size={12} />, description: "Rebase" },
+      { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "Transparan" },
     ],
     operational: [
-      { label: "Uptime (RAVER)", score: 2, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Dikelola pihak ketiga" },
+      { label: "Uptime (RAVER)", score: 1, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Great" },
       { label: "Slashing History", score: 1, maxScore: 2, icon: <ShieldCheck size={12} />, description: "Insiden minor" },
-      { label: "Client Diversity", score: 3, maxScore: 3, icon: <Globe size={12} />, description: "Client mayoritas" },
+      { label: "Client Diversity", score: 2, maxScore: 3, icon: <Globe size={12} />, description: "33.1%" },
     ],
     technological: [
       { label: "SC Security", score: 1, maxScore: 3, icon: <Lock size={12} />, description: "Verified & Audited" },
