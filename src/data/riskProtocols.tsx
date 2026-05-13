@@ -35,19 +35,19 @@ export interface Protocol {
 export const protocols: Protocol[] = [
   {
     id: "solo", 
-    name: "Solo Staking (Syariah)", 
+    name: "Solo Staking", 
     iconPath: "/solo-staking-logo.png",
     description: "Model staking mandiri dengan kontrol penuh atas validator, mematuhi prinsip syariah sepenuhnya.",
     status: "Audited",
     compliance: [
-      { label: "Mekanisme Akad", score: 0, maxScore: 1, icon: <Scale size={12} />, description: "Wajib E-Contract / Ijarah Muntahiyah" },
-      { label: "Potensi Riba", score: 0, maxScore: 1, icon: <Zap size={12} />, description: "Murni bagi hasil (NAV)" },
-      { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "Data on-chain transparan" },
+      { label: "Mekanisme Akad", score: 0, maxScore: 1, icon: <Scale size={12} />, description: "Yes (E-Contract)" },
+      { label: "Potensi Riba", score: 0, maxScore: 1, icon: <Zap size={12} />, description: "No (Ju'alah)" },
+      { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "No (Transparan)" },
     ],
     operational: [
-      { label: "Uptime (RAVER)", score: 2, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Uptime > 99.9%" },
+      { label: "Uptime (RAVER)", score: 3, maxScore: 4, icon: <RefreshCcw size={12} />, description: "Moderate" },
       { label: "Slashing History", score: 1, maxScore: 2, icon: <ShieldCheck size={12} />, description: "Rekam jejak bersih" },
-      { label: "Client Diversity", score: 2, maxScore: 3, icon: <Globe size={12} />, description: "Minoritas (s<33%)" },
+      { label: "Client Diversity", score: 1, maxScore: 3, icon: <Globe size={12} />, description: "Great (<33%)" },
     ],
     technological: [
       { label: "SC Security", score: 2, maxScore: 3, icon: <Lock size={12} />, description: "Verified / Not Audited" },
@@ -65,7 +65,7 @@ export const protocols: Protocol[] = [
     description: "Protokol liquid staking populer, namun memiliki celah kepatuhan pada mekanisme reward.",
     status: "Audited",
     compliance: [
-      { label: "Mekanisme Akad", score: 0, maxScore: 1, icon: <Scale size={12} />, description: "Terstandarisasi" },
+      { label: "Mekanisme Akad", score: 0, maxScore: 1, icon: <Scale size={12} />, description: "Terms & Conditions" },
       { label: "Potensi Riba", score: 1, maxScore: 1, icon: <Zap size={12} />, description: "Rebase" },
       { label: "Potensi Gharar", score: 0, maxScore: 1, icon: <AlertTriangle size={12} />, description: "Transparan" },
     ],
